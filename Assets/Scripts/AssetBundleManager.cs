@@ -244,6 +244,9 @@ namespace 君莫笑
         //引用计数
         protected int m_RerCount=0;
 
+        //是否切换场景清空
+        public bool m_Clear = true;
+
         public int RefCount
         {
             get { return m_RerCount;}

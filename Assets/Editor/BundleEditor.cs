@@ -261,29 +261,32 @@ public class BundleEditor : MonoBehaviour
 
             config.ABList.Add(abBase);
 
-            //xml
-            string xmlPath = Application.dataPath + "/AssetBundleConfig.xml";
-            FileStream fileStream=new FileStream(xmlPath,FileMode.Create,FileAccess.ReadWrite,FileShare.ReadWrite);
-            StreamWriter sw = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
-            XmlSerializer xs = new XmlSerializer(config.GetType());
-            xs.Serialize(sw, config);
-            sw.Close();
-            fileStream.Close();
-
-            //二进制
-
-            //可通过crc校验，去掉path信息，减少二进制文件冗余
-            foreach (var abbase in config.ABList)
-            {
-                abbase.Path = "";
-            }
-
-            string bytePath = "Assets/GameData/Data/ABdata/AssetBundleConfig.bytes";
-            FileStream fs = new FileStream(bytePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-            BinaryFormatter bf=new BinaryFormatter();
-            bf.Serialize(fs, config);
-            fs.Close();
+            
         }
+
+        //Fixed
+        //xml
+        string xmlPath = Application.dataPath + "/AssetBundleConfig.xml";
+        FileStream fileStream = new FileStream(xmlPath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+        StreamWriter sw = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+        XmlSerializer xs = new XmlSerializer(config.GetType());
+        xs.Serialize(sw, config);
+        sw.Close();
+        fileStream.Close();
+
+        //二进制
+
+        //可通过crc校验，去掉path信息，减少二进制文件冗余
+        foreach (var abbase in config.ABList)
+        {
+            abbase.Path = "";
+        }
+
+        string bytePath = "Assets/GameData/Data/ABdata/AssetBundleConfig.bytes";
+        FileStream fs = new FileStream(bytePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+        BinaryFormatter bf = new BinaryFormatter();
+        bf.Serialize(fs, config);
+        fs.Close();
     }
 
 

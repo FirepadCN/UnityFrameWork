@@ -59,6 +59,7 @@ namespace 君莫笑
 
     public class ResourceManager : Singleton<ResourceManager>
     {
+        //单例需要
         protected ResourceManager()
         {
         }
@@ -94,6 +95,95 @@ namespace 君莫笑
 
             m_Startmono = mono;
             m_Startmono.StartCoroutine(AsyncLoadCor());
+        }
+
+        /// <summary>
+        /// 清空缓存
+        /// </summary>
+        public void ClearCache()
+        {
+            List<ResourceItem> tempList=new List<ResourceItem>();
+            foreach (var item in AssetDic.Values)
+            {
+                if(item.m_Clear)
+                    tempList.Add(item);
+            }
+
+            foreach (ResourceItem resourceItem in tempList)
+            {
+                DestoryResourceItem(resourceItem,true);
+            }
+
+            tempList.Clear();
+
+
+//            while (m_NoRefrenceAssetMapList.Size()>0)
+//            {
+//                ResourceItem item = m_NoRefrenceAssetMapList.Back();
+//                DestoryResourceItem(item,true);
+//                m_NoRefrenceAssetMapList.Pop();
+//            }
+        }
+
+        /// <summary>
+        /// 预加载资源
+        /// </summary>
+        /// <param name="path"></param>
+        public void PreLoadRes(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+            
+            uint crc = CRC32.GetCRC32(path);
+
+
+            ResourceItem item = GetCacheResourrceItem(crc,0);
+
+            if (item != null)
+            {
+                return;
+            }
+
+            Object obj = null;
+
+#if UNITY_EDITOR
+            if (!m_LoadFromAssetBundle)
+            {
+                item = AssetBundleManager.Instance.FindResourceItem(crc);
+                if (item.m_Obj != null)
+                {
+                    obj = item.m_Obj;
+                }
+                else
+                {
+                    obj = LoadAssetByEditor<Object>(path);
+
+                }
+            }
+#endif
+
+            if (obj == null)
+            {
+                item = AssetBundleManager.Instance.LoatResourceAssetBundle(crc);
+                if (item != null && item.m_AssetBundle != null)
+                {
+                    if (item.m_Obj != null)
+                    {
+                        obj = item.m_Obj;
+                    }
+                    else
+                    {
+                        obj = item.m_AssetBundle.LoadAsset<Object>(item.m_AssetName);
+                    }
+                }
+            }
+
+            CacheResource(path, ref item, crc, obj);
+            
+            //跳场景不清空缓存
+            item.m_Clear = false;
+            ReleaseResource(obj, false);
+
         }
 
         //同步资源加载，外部直接调用，仅加载不需要实例化的资源，如：texure,音频文等
@@ -172,14 +262,16 @@ namespace 君莫笑
         {
             if (item == null || item.RefCount > 0) return;
 
-            if (!AssetDic.Remove(item.m_Crc))
-            {
-                return;
-            }
+            
 
             if (!destorycache)
             {
-                m_NoRefrenceAssetMapList.InsertToHead(item);
+                //m_NoRefrenceAssetMapList.InsertToHead(item);
+                return;
+            }
+
+            if (!AssetDic.Remove(item.m_Crc))
+            {
                 return;
             }
 
@@ -197,7 +289,7 @@ namespace 君莫笑
         }
 
         /// <summary>
-        /// 不需要实例化资源的卸载
+        /// 不需要实例化资源的卸载，根据对象
         /// </summary>
         /// <returns></returns>
         public bool ReleaseResource(Object obj, bool destoryObj = false)
@@ -223,6 +315,35 @@ namespace 君莫笑
             return true;
 
         }
+
+        /// <summary>
+        /// 不需要实例化的资源协助,根据路径
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="destoryObj"></param>
+        /// <returns></returns>
+        public bool ReleaseResource(string path, bool destoryObj = false)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+
+            uint crc = CRC32.GetCRC32(path);
+
+
+            ResourceItem item = null;
+
+            if (!AssetDic.TryGetValue(crc, out item) || item == null)
+            {
+                Debug.LogError($"AssetDic里不存在资源： {path},可能多次释放");
+                return false;
+            }
+
+            item.RefCount--;
+            DestoryResourceItem(item, destoryObj);
+            return true;
+
+        }
+
+
 
         /// <summary>
         /// 缓存加载的资源
@@ -366,11 +487,11 @@ namespace 君莫笑
 
                             if (loadingItem.m_Sprite)
                             {
-                                abRequest = item.m_AssetBundle.LoadAssetAsync<Sprite>(item.m_ABName);
+                                abRequest = item.m_AssetBundle.LoadAssetAsync<Sprite>(item.m_AssetName);
                             }
                             else
                             {
-                                abRequest = item.m_AssetBundle.LoadAssetAsync(item.m_ABName);
+                                abRequest = item.m_AssetBundle.LoadAssetAsync(item.m_AssetName);
 
                             }
                             yield return abRequest;
