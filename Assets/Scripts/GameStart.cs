@@ -9,6 +9,8 @@ public class GameStart : MonoBehaviour
     public AudioSource source;
     void Awake()
     {
+        GameObject.DontDestroyOnLoad(gameObject);
+
         bool iscuccess = AssetBundleManager.Instance.LoadAssetBundleConfig();
         Debug.Log($"ab资源依赖配置表是否加载成功:{iscuccess}");
         ResourceManager.Instance.Init(this);

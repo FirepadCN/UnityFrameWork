@@ -17,6 +17,38 @@ namespace 君莫笑
         RES_NUM,
     }
 
+    /// <summary>
+    /// 实例化对象中间类
+    /// </summary>
+    public class ResourceObj
+    {
+        public uint m_Crc = 0;
+        //存ResourceItem
+        public ResourceItem m_ResItem = null;
+        //实例化出来的GameObject
+        public GameObject m_CloneObj = null;
+        /// <summary>
+        /// 是否跳场景清除
+        /// </summary>
+        public bool m_bClear = true;
+        /// <summary>
+        /// 唯一资源标识符
+        /// </summary>
+        public long m_Guid = 0;
+        /// <summary>
+        /// 是否已被释放
+        /// </summary>
+        public bool m_Already = false;
+
+        public void Reset()
+        {
+            m_Crc = 0;
+            m_CloneObj = null;
+            m_bClear = true;
+            m_Guid = 0;
+        }
+    }
+
     public class AsyncLoadResParam
     {
         public List<AsyncCallBack> m_CallBackList= new List<AsyncCallBack>();
@@ -124,6 +156,70 @@ namespace 君莫笑
 //                m_NoRefrenceAssetMapList.Pop();
 //            }
         }
+
+
+        #region 引用计数增减操作
+
+        /// <summary>
+        /// 根据ResObj增加引用计数
+        /// </summary>
+        /// <param name="resObj"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public int IncreaseResourceRef(ResourceObj resObj, int count = 1)
+        {
+            return resObj != null ? IncreaseResourceRef(resObj.m_Crc, count) : 0;
+        }
+
+        /// <summary>
+        /// 根据path增加引用计数
+        /// </summary>
+        /// <param name="crc"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public int IncreaseResourceRef(uint crc, int count = 1)
+        {
+            ResourceItem item = null;
+            if (!AssetDic.TryGetValue(crc, out item) || item == null)
+                return 0;
+
+            item.RefCount += count;
+            item.m_LastUseTime = Time.realtimeSinceStartup;
+
+            return item.RefCount;
+        }
+
+        /// <summary>
+        /// 根据ResourceObj减少引用计数
+        /// </summary>
+        /// <param name="resObj"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public int DecreaseResourceRef(ResourceObj resObj, int count = 1)
+        {
+            return resObj != null ? DecreaseResourceRef(resObj.m_Crc, count) : 0;
+        }
+
+        /// <summary>
+        /// 根据路径减少引用计数
+        /// </summary>
+        /// <param name="crc"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public int DecreaseResourceRef(uint crc, int count = 1)
+        {
+            ResourceItem item = null;
+            if (!AssetDic.TryGetValue(crc, out item) || item == null)
+                return 0;
+
+            item.RefCount -= count;
+            item.m_LastUseTime = Time.realtimeSinceStartup;
+
+            return item.RefCount;
+        }
+
+        #endregion
+
 
         /// <summary>
         /// 预加载资源
@@ -241,6 +337,56 @@ namespace 君莫笑
         }
 
         /// <summary>
+        /// 同步加载资源，针对给ObjectManager接口
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="resObj"></param>
+        /// <returns></returns>
+        public ResourceObj LoadResource(string path, ResourceObj resObj)
+        {
+            if (resObj == null)
+                return null;
+
+            uint crc = resObj.m_Crc == 0 ? CRC32.GetCRC32(path) : resObj.m_Crc;
+
+            ResourceItem item = GetCacheResourrceItem(crc);
+
+            if (item != null)
+            {
+                resObj.m_ResItem = item;
+                return resObj;
+            }
+
+            Object obj = null;
+
+#if UNITY_EDITOR
+            if (!m_LoadFromAssetBundle)
+            {
+                item = AssetBundleManager.Instance.FindResourceItem(crc);
+                if (item.m_Obj != null)
+                    obj = item.m_Obj as Object;
+                else
+                    obj = LoadAssetByEditor<Object>(path);
+
+            }
+#endif
+
+            if (obj == null)
+            {
+                item = AssetBundleManager.Instance.LoatResourceAssetBundle(crc);
+                if (item.m_Obj != null)
+                    obj = item.m_Obj as Object;
+                else
+                    obj = item.m_AssetBundle.LoadAsset<Object>(item.m_ABName);
+            }
+
+            CacheResource(path,ref item,crc,obj);
+            resObj.m_ResItem = item;
+            item.m_Clear = resObj.m_bClear;
+            return resObj;
+        }
+
+        /// <summary>
         /// 当前内存使用大于80%的时候清除最早没有使用的资源
         /// </summary>
         protected void WashOut()
@@ -314,6 +460,30 @@ namespace 君莫笑
             DestoryResourceItem(item, destoryObj);
             return true;
 
+        }
+
+        /// <summary>
+        /// 释放需要实例化的资源,根据
+        /// </summary>
+        /// <param name="resobj"></param>
+        /// <param name="destoryObj"></param>
+        /// <returns></returns>
+        public bool ReleaseResource(ResourceObj resobj, bool destoryObj = false)
+        {
+            if (resobj == null) return false;
+
+            ResourceItem item = null;
+
+            if (!AssetDic.TryGetValue(resobj.m_Crc,out item)||null==item)
+            {
+                Debug.LogError($"AssetDic里不存在资源： {resobj.m_CloneObj.name},可能多次释放");
+            }
+
+            GameObject.Destroy(resobj.m_CloneObj);
+
+            item.RefCount--;
+            DestoryResourceItem(item,destoryObj);
+            return true;
         }
 
         /// <summary>

@@ -2,6 +2,10 @@
 
 namespace 君莫笑
 {
+    /// <summary>
+    /// 类对象池
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ClassObjectPool<T> where T : class, new()
     {
         /// <summary>

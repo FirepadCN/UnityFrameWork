@@ -9,6 +9,7 @@ namespace 君莫笑
     {
         protected AssetBundleManager()
         {
+
         }
 
         /// <summary>
