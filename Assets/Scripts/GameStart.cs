@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using 君莫笑;
-
 public class GameStart : MonoBehaviour
 {
     private AudioClip clip;
@@ -14,6 +13,8 @@ public class GameStart : MonoBehaviour
         bool iscuccess = AssetBundleManager.Instance.LoadAssetBundleConfig();
         Debug.Log($"ab资源依赖配置表是否加载成功:{iscuccess}");
         ResourceManager.Instance.Init(this);
+
+        ObjectManager.Instance.Init(transform.Find("RecyclePoolTrs"),transform.Find("SceneTrs"));
     }
 
     void Start()
@@ -21,6 +22,7 @@ public class GameStart : MonoBehaviour
         //SynLoad();
         //Invoke("AsycnLoadTest", 1f);
        // ResourceManager.Instance.PreLoadRes("Assets/GameData/Sounds/senlin.mp3");
+
     }
 
     private void SynLoad()

@@ -7,6 +7,12 @@ namespace 君莫笑
 {
     public class ObjectManager : Singleton<ObjectManager>
     {
+
+        protected ObjectManager()
+        {
+
+        }
+
         //对象池节点
         public Transform ResyclePoolTrs;
         //场景节点
@@ -23,18 +29,17 @@ namespace 君莫笑
         /// <summary>
         /// ResourceObj类对象池
         /// </summary>
-        protected ClassObjectPool<ResourceObj> m_ResourceObjClassPool =
-            ObjectManager.Instance.GetOrCreateClassPool<ResourceObj>(1000);
+        protected ClassObjectPool<ResourceObj> m_ResourceObjClassPool; //Fixed:不能在这里调用单例，单例中用了unity下的FindObjectByType,自己都没创建就调自己的方法
 
-        
+        protected Dictionary<Type, object> m_ClassPoolDic;
 
-
-        protected Dictionary<Type, object> m_ClassPoolDic=new Dictionary<Type, object>();
-
-        protected ObjectManager()
+        void Awake()
         {
-            
+            m_ClassPoolDic=new Dictionary<Type, object>();
+            m_ResourceObjClassPool = ObjectManager.Instance.GetOrCreateClassPool<ResourceObj>(1000);
         }
+
+
 
         /// <summary>
         /// 初始化调用
@@ -117,6 +122,48 @@ namespace 君莫笑
             return resource.m_CloneObj;
         }
 
+        /// <summary>
+        /// 异步对象加载
+        /// </summary>
+        public void InstantiateObjectAsync(string path, OnAsyncObjFinish dealFinish, LoadResPriority priority,
+            bool setSceneObject = false, object param1 = null, object param2 = null, object param3 = null,
+            bool bClear = true)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            uint crc = CRC32.GetCRC32(path);
+            ResourceObj resObj = GetObjectFromPool(crc);
+
+            if (resObj != null)
+            {
+                if(setSceneObject)
+                   resObj.m_CloneObj.transform.SetParent(SceneTrs,false);
+
+                if (dealFinish != null)
+                    dealFinish(path, resObj.m_CloneObj, param1, param2, param3);
+                return;
+            }
+
+            resObj = m_ResourceObjClassPool.Spawn(true);
+            resObj.m_Crc = crc;
+            resObj.m_setSceneParent = setSceneObject;
+            resObj.m_bClear = bClear;
+            resObj.m_DealFnish = dealFinish;
+
+            resObj.m_param1 = param1;
+            resObj.m_param2 = param2;
+            resObj.m_param3 = param3;
+
+            //调用ResourceManager异步加载接口
+            ResourceManager.Instance.AsyncLoadResource(path,resObj,OnLoadResourceObjFinish,priority);
+
+        }
+
+        void OnLoadResourceObjFinish(string path,ResourceObj resObj,object param1=null, object param2 = null, object param3 = null)
+        {
+            
+        }
 
         /// <summary>
         /// 释放需要实例化的资源

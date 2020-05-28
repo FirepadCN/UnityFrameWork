@@ -70,18 +70,18 @@ namespace 君莫笑
         /// If this script is placed on game objec in the scene, make sure to
         /// keep only instance.
         /// </summary>
-        protected virtual void Awake()
-        {
-            if (_instance == null)
-            {
-                _instance = this as T;
-                DontDestroyOnLoad(gameObject);
-            }
-            else if (_instance != this)
-            {
-                Destroy(gameObject);
-            }
-        }
+//        protected virtual void Awake()
+//        {
+//            if (_instance == null)
+//            {
+//                _instance = this as T;
+//                DontDestroyOnLoad(gameObject);
+//            }
+//            else if (_instance != this)
+//            {
+//                Destroy(gameObject);
+//            }
+//        }
         private static bool applicationIsQuitting = false;
         /// <summary>
         /// When Unity quits, it destroys objects in a random order.

@@ -40,12 +40,23 @@ namespace 君莫笑
         /// </summary>
         public bool m_Already = false;
 
+        //--------------------------
+        public bool m_setSceneParent = false;
+
+        //资源加载完成回调
+        public OnAsyncObjFinish m_DealFnish = null;
+        //异步参数
+        public object m_param1, m_param2, m_param3 = null;
+
         public void Reset()
         {
             m_Crc = 0;
             m_CloneObj = null;
             m_bClear = true;
             m_Guid = 0;
+            m_setSceneParent = false;
+            m_DealFnish = null;
+            m_param1, m_param2, m_param3 = null;
         }
     }
 
@@ -69,8 +80,12 @@ namespace 君莫笑
 
     public class AsyncCallBack
     {
-        //加载回传的回调
-        public OnAsyncObjFinish m_DealFinish = null;
+        //加载回传的回调object
+        public OnAsyncObjFinish m_DealObjectFinish = null;
+
+        //加载完成回到objectmananger
+        public OnAsyncFinish m_DealFinish = null;
+        public ResourceObj m_ResObj = null;
 
         //回调参数
         public object m_Param1 = null;
@@ -79,15 +94,21 @@ namespace 君莫笑
 
         public void Reset()
         {
+            m_DealObjectFinish = null;
             m_DealFinish = null;
             m_Param1 = null;
             m_Param2 = null;
             m_Param3 = null;
+
+            m_ResObj = null;
         }
     }
 
-    public delegate void OnAsyncObjFinish(string path, Object obj, object param1 = null, object param2 = null,
-        object param3 = null);
+    //资源加载完成回调
+    public delegate void OnAsyncObjFinish(string path, Object obj, object param1 = null, object param2 = null,object param3 = null);
+
+    //实例化对象加载完成回调
+    public delegate void OnAsyncFinish(string path, ResourceObj obj, object param1 = null, object param2 = null,object param3 = null);
 
     public class ResourceManager : Singleton<ResourceManager>
     {
@@ -604,11 +625,51 @@ namespace 君莫笑
 
             //往回调列表里面添加回调
             AsyncCallBack callBack = m_AsyncCallBackPool.Spawn(true);
-            callBack.m_DealFinish = dealFinish;
+            callBack.m_DealObjectFinish = dealFinish;
             callBack.m_Param1 = p1;
             callBack.m_Param2 = p2;
             callBack.m_Param3 = p3;
             para.m_CallBackList.Add(callBack);
+        }
+
+
+        /// <summary>
+        /// 针对ObjectManager的异步加载接口
+        /// </summary>
+        public void AsyncLoadResource(string path, ResourceObj resObj, OnAsyncFinish dealFinish,
+            LoadResPriority priority)
+        {
+            ResourceItem item = GetCacheResourrceItem(resObj.m_Crc);
+
+            if (item != null)
+            {
+                resObj.m_ResItem = item;
+                if (dealFinish != null)
+                    dealFinish(path,resObj);
+            }
+
+            //判断是否在加载中
+            AsyncLoadResParam para = null;
+            if (!m_LoadingAssetDic.TryGetValue(resObj.m_Crc, out para) || para == null)
+            {
+                para = m_AsyncLoadResParamPool.Spawn(true);
+                para.m_Crc = resObj.m_Crc;
+                para.m_Path = path;
+                para.m_Priority = priority;
+
+                m_LoadingAssetDic.Add(resObj.m_Crc, para);
+                m_LoadingAssetList[(int)priority].Add(para);
+
+            }
+
+
+            //往回调列表里面添加回调
+            AsyncCallBack callBack = m_AsyncCallBackPool.Spawn(true);
+            callBack.m_DealFinish = dealFinish;
+            callBack.m_ResObj = resObj;
+
+            para.m_CallBackList.Add(callBack);
+
         }
 
         /// <summary>
@@ -681,11 +742,11 @@ namespace 君莫笑
                     for (int j = 0; j < callBackList.Count; j++)
                     {
                         AsyncCallBack callBack = callBackList[j];
-                        if (callBack != null && callBack.m_DealFinish != null)
+                        if (callBack != null && callBack.m_DealObjectFinish != null)
                         {
-                            callBack.m_DealFinish(loadingItem.m_Path, obj, callBack.m_Param1, callBack.m_Param2,
+                            callBack.m_DealObjectFinish(loadingItem.m_Path, obj, callBack.m_Param1, callBack.m_Param2,
                                 callBack.m_Param3);
-                            callBack.m_DealFinish = null;
+                            callBack.m_DealObjectFinish = null;
                         }
 
                         callBack.Reset();
