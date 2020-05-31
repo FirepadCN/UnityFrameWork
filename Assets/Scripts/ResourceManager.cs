@@ -56,7 +56,7 @@ namespace 君莫笑
             m_Guid = 0;
             m_setSceneParent = false;
             m_DealFnish = null;
-            m_param1, m_param2, m_param3 = null;
+            m_param1=m_param2= m_param3 = null;
         }
     }
 
@@ -742,6 +742,17 @@ namespace 君莫笑
                     for (int j = 0; j < callBackList.Count; j++)
                     {
                         AsyncCallBack callBack = callBackList[j];
+
+                        if (callBack != null && callBack.m_DealFinish != null && callBack.m_ResObj != null)
+                        {
+                            ResourceObj tempResourceObj = callBack.m_ResObj;
+                            tempResourceObj.m_ResItem = item;
+                            callBack.m_DealFinish(loadingItem.m_Path, tempResourceObj, tempResourceObj.m_param1,
+                                tempResourceObj.m_param2, tempResourceObj.m_param3);
+                            callBack.m_DealFinish = null;
+                            tempResourceObj = null;
+                        }
+
                         if (callBack != null && callBack.m_DealObjectFinish != null)
                         {
                             callBack.m_DealObjectFinish(loadingItem.m_Path, obj, callBack.m_Param1, callBack.m_Param2,

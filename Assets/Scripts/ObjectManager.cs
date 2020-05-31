@@ -159,10 +159,44 @@ namespace 君莫笑
             ResourceManager.Instance.AsyncLoadResource(path,resObj,OnLoadResourceObjFinish,priority);
 
         }
+        
 
+        /// <summary>
+        /// 资源加载完成回调
+        /// </summary>
+        /// <param name="path">路径</param>
+        /// <param name="resObj">中间类</param>
         void OnLoadResourceObjFinish(string path,ResourceObj resObj,object param1=null, object param2 = null, object param3 = null)
         {
-            
+            if (resObj == null)
+                return;
+
+            if (resObj.m_ResItem.m_Obj == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogError("异步加载资源为空：" + path);
+#endif
+            }
+            else
+            {
+                resObj.m_CloneObj = Instantiate(resObj.m_ResItem.m_Obj) as GameObject;
+            }
+
+            if (resObj.m_CloneObj != null && resObj.m_setSceneParent)
+            {
+                resObj.m_CloneObj.transform.SetParent(SceneTrs,false);
+            }
+
+            if (resObj.m_DealFnish != null)
+            {
+                int tempID = resObj.m_CloneObj.GetInstanceID();
+                if(!m_ResourceObjDic.ContainsKey(tempID))
+                    m_ResourceObjDic.Add(tempID,resObj);
+
+                resObj.m_DealFnish(path, resObj.m_CloneObj, resObj.m_param1, resObj.m_param2, resObj.m_param3);
+
+            }
+
         }
 
         /// <summary>

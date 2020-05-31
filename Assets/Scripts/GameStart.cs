@@ -6,6 +6,8 @@ public class GameStart : MonoBehaviour
 {
     private AudioClip clip;
     public AudioSource source;
+
+    private GameObject obj;
     void Awake()
     {
         GameObject.DontDestroyOnLoad(gameObject);
@@ -22,6 +24,8 @@ public class GameStart : MonoBehaviour
         //SynLoad();
         //Invoke("AsycnLoadTest", 1f);
        // ResourceManager.Instance.PreLoadRes("Assets/GameData/Sounds/senlin.mp3");
+
+        ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
 
     }
 
@@ -44,15 +48,27 @@ public class GameStart : MonoBehaviour
         source.Play();
     }
 
+    void OnLoadFinishObj(string path, Object obj, object param1 = null, object param2 = null, object param3 = null)
+    {
+        this.obj = obj as GameObject;
+    }
+
     void Update()
     {
         //return;
         if (Input.GetKeyDown(KeyCode.A))
         {
-            source.Stop();
-            ResourceManager.Instance.ReleaseResource(clip,true);
-            source.clip = null;
-            clip = null;
+            ObjectManager.Instance.ReleaseObject(obj);
+            obj = null;
+        }
+        else if(Input.GetKeyDown(KeyCode.D))
+        {
+            ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            ObjectManager.Instance.ReleaseObject(obj,0,true);
+            obj = null;
         }
 
         //TEST:预加载
