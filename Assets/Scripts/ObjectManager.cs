@@ -33,6 +33,9 @@ namespace 君莫笑
 
         protected Dictionary<Type, object> m_ClassPoolDic;
 
+        //根据异步的GUID储存ResourceObj,来判断是否正在异步加载
+        protected Dictionary<long, ResourceObj> m_AsyncResObj = new Dictionary<long, ResourceObj>();
+
         void Awake()
         {
             m_ClassPoolDic=new Dictionary<Type, object>();
@@ -84,6 +87,44 @@ namespace 君莫笑
         }
 
         /// <summary>
+        /// 取消异步加载
+        /// </summary>
+        /// <param name="guid"></param>
+        public void CancleLoad(long guid)
+        {
+            ResourceObj resOjbObj = null;
+            if (m_AsyncResObj.TryGetValue(guid, out resOjbObj)&&ResourceManager.Instance.CancleLoad(resOjbObj))
+            {
+                m_AsyncResObj.Remove(guid);
+                resOjbObj.Reset();
+                m_ResourceObjClassPool.Recycle(resOjbObj);
+            }
+        }
+
+        /// <summary>
+        /// 预加载
+        /// </summary>
+        public void PreloadGameObject(string path, int count = 1, bool clear = false)
+        {
+            List<GameObject> tempGameObjectList = new List<GameObject>();
+
+            for (int i = 0; i < count; i++)
+            {
+                GameObject obj = InstantiateObject(path, false, clear);
+                tempGameObjectList.Add(obj);
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                GameObject obj = tempGameObjectList[i];
+                ReleaseObject(obj);
+                obj = null;
+            }
+
+            tempGameObjectList.Clear();
+        }
+
+        /// <summary>
         /// 同步加载需要实例化的资源
         /// </summary>
         /// <param name="path"></param>
@@ -125,12 +166,12 @@ namespace 君莫笑
         /// <summary>
         /// 异步对象加载
         /// </summary>
-        public void InstantiateObjectAsync(string path, OnAsyncObjFinish dealFinish, LoadResPriority priority,
+        public long InstantiateObjectAsync(string path, OnAsyncObjFinish dealFinish, LoadResPriority priority,
             bool setSceneObject = false, object param1 = null, object param2 = null, object param3 = null,
             bool bClear = true)
         {
             if (string.IsNullOrEmpty(path))
-                return;
+                return 0;
 
             uint crc = CRC32.GetCRC32(path);
             ResourceObj resObj = GetObjectFromPool(crc);
@@ -142,8 +183,10 @@ namespace 君莫笑
 
                 if (dealFinish != null)
                     dealFinish(path, resObj.m_CloneObj, param1, param2, param3);
-                return;
+                return resObj.m_Guid;
             }
+
+            long guid = ResourceManager.Instance.CreateGUID();
 
             resObj = m_ResourceObjClassPool.Spawn(true);
             resObj.m_Crc = crc;
@@ -158,6 +201,7 @@ namespace 君莫笑
             //调用ResourceManager异步加载接口
             ResourceManager.Instance.AsyncLoadResource(path,resObj,OnLoadResourceObjFinish,priority);
 
+            return guid;
         }
         
 
@@ -181,6 +225,11 @@ namespace 君莫笑
             {
                 resObj.m_CloneObj = Instantiate(resObj.m_ResItem.m_Obj) as GameObject;
             }
+
+            //加载完成就从正在加载的异步中移除
+            if (m_AsyncResObj.ContainsKey(resObj.m_Guid))
+                m_AsyncResObj.Remove(resObj.m_Guid);
+
 
             if (resObj.m_CloneObj != null && resObj.m_setSceneParent)
             {

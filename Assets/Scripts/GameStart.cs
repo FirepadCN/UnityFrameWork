@@ -25,7 +25,9 @@ public class GameStart : MonoBehaviour
         //Invoke("AsycnLoadTest", 1f);
        // ResourceManager.Instance.PreLoadRes("Assets/GameData/Sounds/senlin.mp3");
 
-        ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
+        //ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
+
+        ObjectManager.Instance.PreloadGameObject("Assets/GameData/Prefabs/Attack.prefab",20);
 
     }
 
