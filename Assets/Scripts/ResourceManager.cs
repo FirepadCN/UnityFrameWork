@@ -476,8 +476,6 @@ namespace 君莫笑
         {
             if (item == null || item.RefCount > 0) return;
 
-            
-
             if (!destorycache)
             {
                 //m_NoRefrenceAssetMapList.InsertToHead(item);
@@ -491,6 +489,9 @@ namespace 君莫笑
 
             //释放Assetbundle引用
             AssetBundleManager.Instance.ReleaseAsset(item);
+            
+            //清空资源对应的对象池
+            ObjectManager.Instance.ClearPoolObject(item.m_Crc);
 
             if (item.m_Obj != null)
             {

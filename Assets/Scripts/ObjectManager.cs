@@ -36,14 +36,6 @@ namespace 君莫笑
         //根据异步的GUID储存ResourceObj,来判断是否正在异步加载
         protected Dictionary<long, ResourceObj> m_AsyncResObj = new Dictionary<long, ResourceObj>();
 
-        void Awake()
-        {
-            m_ClassPoolDic=new Dictionary<Type, object>();
-            m_ResourceObjClassPool = ObjectManager.Instance.GetOrCreateClassPool<ResourceObj>(1000);
-        }
-
-
-
         /// <summary>
         /// 初始化调用
         /// </summary>
@@ -51,10 +43,11 @@ namespace 君莫笑
         /// <param name="sceneTrs"></param>
         public void Init(Transform recycleTrs,Transform sceneTrs)
         {
+            m_ClassPoolDic=new Dictionary<Type, object>();
+            m_ResourceObjClassPool = GetOrCreateClassPool<ResourceObj>(1000);
             this.ResyclePoolTrs = recycleTrs;
             this.SceneTrs = sceneTrs;
         }
-
 
         /// <summary>
         /// 从对象池中取出对象
@@ -370,6 +363,92 @@ namespace 君莫笑
 
         #endregion
 
+        #region API
+        
+        /// <summary>
+        /// 清空对象池
+        /// </summary>
+        public void ClearCache()
+        {
+            List<uint> tempList = new List<uint>();
+            
+            foreach (var key in m_ObjectPoolDic.Keys)  
+            {
+                List<ResourceObj> st = m_ObjectPoolDic[key];
+                for (int i = st.Count-1; i >=0; i--)
+                {
+                    ResourceObj resourceObj = st[i];
+                    if(!System.Object.ReferenceEquals(resourceObj.m_CloneObj,null)&& resourceObj.m_bClear)
+                    {
+                        GameObject.Destroy(resourceObj.m_CloneObj);
+                        m_ResourceObjDic.Remove(resourceObj.m_CloneObj.GetInstanceID());
+                        resourceObj.Reset();
+                        m_ResourceObjClassPool.Recycle(resourceObj);
+                    }
+                }
+                
+                if(st.Count<=0)
+                {
+                    tempList.Add(key);
+                }
+            }
+
+            for (int i = 0; i < tempList.Count; i++)
+            {
+                uint temp = tempList[i];
+                if (m_ObjectPoolDic.ContainsKey(temp))
+                    m_ObjectPoolDic.Remove(temp);
+            }
+
+            tempList.Clear();
+        }
+        
+        /// <summary>
+        /// 清除某个资源在对象池中所有的对象
+        /// </summary>
+        public void ClearPoolObject(uint crc)
+        {
+            List<ResourceObj> st = null;
+            if (!m_ObjectPoolDic.TryGetValue(crc, out st) || st == null)
+                return;
+
+            for (int i = st.Count-1; i >=0; i--)
+            {
+                ResourceObj resourceObj = st[i];
+                if (resourceObj.m_bClear)
+                {
+                    st.Remove(resourceObj);
+                    int tempID = resourceObj.m_CloneObj.GetInstanceID();
+                    GameObject.Destroy(resourceObj.m_CloneObj);
+                    resourceObj.Reset();
+                    m_ResourceObjDic.Remove(tempID);
+                    m_ResourceObjClassPool.Recycle(resourceObj);
+                }
+            }
+
+            if (st.Count <= 0)
+                m_ObjectPoolDic.Remove(crc);
+        }
+
+        /// <summary>
+        /// 是否正在异步加载
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public bool IsingAsyncLoad(long guid)
+        {
+            return m_AsyncResObj[guid] != null;
+        }
+
+        public bool IsObjectManagerCreate(GameObject tempObj)
+        {
+            ResourceObj resourceObj = m_ResourceObjDic[tempObj.GetInstanceID()];
+            return resourceObj != null;
+        }
+
+        #endregion
+
+        
     }
 
 }
