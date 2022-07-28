@@ -48,6 +48,11 @@ namespace 君莫笑
         //异步参数
         public object m_param1, m_param2, m_param3 = null;
 
+        /// <summary>
+        /// 离线数据
+        /// </summary>
+        public OfflineData m_OfflineData = null;
+
         public void Reset()
         {
             m_Crc = 0;
@@ -57,6 +62,7 @@ namespace 君莫笑
             m_setSceneParent = false;
             m_DealFnish = null;
             m_param1=m_param2= m_param3 = null;
+            m_OfflineData = null;
         }
     }
 
@@ -431,11 +437,15 @@ namespace 君莫笑
             if (!m_LoadFromAssetBundle)
             {
                 item = AssetBundleManager.Instance.FindResourceItem(crc);
-                if (item.m_Obj != null)
+
+                if (item!=null&&item.m_Obj != null)
                     obj = item.m_Obj as Object;
                 else
+                {
+                    if (item == null)
+                        item = new ResourceItem {m_Crc = crc};
                     obj = LoadAssetByEditor<Object>(path);
-
+                }
             }
 #endif
 
@@ -638,7 +648,7 @@ namespace 君莫笑
         /// <summary>
         /// 异步加载资源（仅仅是不需要实例化的资源，如音频，图片等等）
         /// </summary>
-        public void AsynLoadResource(string path,OnAsyncObjFinish dealFinish,LoadResPriority priority,object p1=null, object p2 = null, object p3 = null,uint crc=0)
+        public void AsyncLoadResource(string path,OnAsyncObjFinish dealFinish,LoadResPriority priority,object p1=null, object p2 = null, object p3 = null,uint crc=0)
         {
             if (crc == 0)
             {

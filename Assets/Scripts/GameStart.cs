@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using 君莫笑;
+using 君莫笑.UGUI;
+
 public class GameStart : MonoBehaviour
 {
     private AudioClip clip;
@@ -21,15 +24,28 @@ public class GameStart : MonoBehaviour
 
     void Start()
     {
+        #region 资源加载测试
         //SynLoad();
         //Invoke("AsycnLoadTest", 1f);
-       // ResourceManager.Instance.PreLoadRes("Assets/GameData/Sounds/senlin.mp3");
+        // ResourceManager.Instance.PreLoadRes("Assets/GameData/Sounds/senlin.mp3");
 
         //ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
 
-        ObjectManager.Instance.PreloadGameObject("Assets/GameData/Prefabs/Attack.prefab",20);
-
+        //ObjectManager.Instance.PreloadGameObject("Assets/GameData/Prefabs/Attack.prefab",20);
+        #endregion
+        
+        UIManager.Instance.Init(transform.Find("UIRoot")as RectTransform, transform.Find("UIRoot/WndRoot")as RectTransform, 
+            transform.Find("UIRoot/UICamera").GetComponent<Camera>(),transform.Find("UIRoot/EventSystem").GetComponent<EventSystem>());
+        RegisterUI();
+        UIManager.Instance.PopUpWnd("MenuPanel.prefab");
     }
+
+    void RegisterUI()
+    {
+        UIManager.Instance.Register<MenuUI>("MenuPanel.prefab");
+    }
+    
+    #region 测试
 
     private void SynLoad()
     {
@@ -40,7 +56,7 @@ public class GameStart : MonoBehaviour
 
     public void AsycnLoadTest()
     {
-        ResourceManager.Instance.AsynLoadResource("Assets/GameData/Sounds/menusound.mp3", OnLoadFinish,LoadResPriority.RES_MIDDLE);
+        ResourceManager.Instance.AsyncLoadResource("Assets/GameData/Sounds/menusound.mp3", OnLoadFinish,LoadResPriority.RES_MIDDLE);
     }
 
     void OnLoadFinish(string path, Object obj, object p1, object p2, object p3)
@@ -82,6 +98,10 @@ public class GameStart : MonoBehaviour
             source.Play();
         }
     }
+
+    #endregion
+
+    
 
     private void OnApplicaitonQuit()
     {

@@ -8,8 +8,6 @@ public class AutoRotation : MonoBehaviour {
         //InvokeRepeating ("DORotation", 0f, 0.05f);
 	}
 
-    float degree = 0f;
-
     void DORotation(){
         transform.Rotate(Vector3.up);
     }

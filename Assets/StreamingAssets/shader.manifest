@@ -1,16 +1,17 @@
 ManifestFileVersion: 0
-CRC: 341098982
+CRC: 2468053712
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 01cc47b457bda946736b23cff8d71a0b
+    Hash: c272d4757068b2a94cf019bf9feff777
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 7e9ee104d6bb707fb2602b751e6f78b1
+    Hash: 55d48f4ad9c3b13330b9eb5ee5686477
 HashAppended: 0
 ClassTypes:
 - Class: 48
   Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/GameData/Shaders/Water.shader
 - Assets/GameData/Shaders/benghuai.shader

@@ -36,6 +36,11 @@ namespace 君莫笑
         //根据异步的GUID储存ResourceObj,来判断是否正在异步加载
         protected Dictionary<long, ResourceObj> m_AsyncResObj = new Dictionary<long, ResourceObj>();
 
+        private void Awake()
+        {
+            m_ClassPoolDic=new Dictionary<Type, object>();
+        }
+
         /// <summary>
         /// 初始化调用
         /// </summary>
@@ -43,10 +48,24 @@ namespace 君莫笑
         /// <param name="sceneTrs"></param>
         public void Init(Transform recycleTrs,Transform sceneTrs)
         {
-            m_ClassPoolDic=new Dictionary<Type, object>();
             m_ResourceObjClassPool = GetOrCreateClassPool<ResourceObj>(1000);
             this.ResyclePoolTrs = recycleTrs;
             this.SceneTrs = sceneTrs;
+        }
+
+        /// <summary>
+        /// 根据实例化对象直接获取离线数据
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public OfflineData FindOfflineData(GameObject obj)
+        {
+            OfflineData data = null;
+            ResourceObj resourceObj = null;
+            m_ResourceObjDic.TryGetValue(obj.GetInstanceID(), out resourceObj);
+            if (resourceObj != null)
+                data = resourceObj.m_OfflineData;
+            return data;
         }
 
         /// <summary>
@@ -67,6 +86,8 @@ namespace 君莫笑
                 if (!System.Object.ReferenceEquals(obj, null))
                 {
                     resObj.m_Already = false;
+                    if(!System.Object.ReferenceEquals(resObj.m_OfflineData,null))
+                        resObj.m_OfflineData.ResetProp();
 #if UNITY_EDITOR
                     if (obj.name.EndsWith("(Recycle)"))
                     {
@@ -135,10 +156,16 @@ namespace 君莫笑
 
                 resource = ResourceManager.Instance.LoadResource(path, resource);
 
+                if (resource == null)
+                {
+                    Debug.LogError($"未能加载：{path}！");
+                    return null;
+                }
 
                 if (resource.m_ResItem.m_Obj != null)
                 {
                     resource.m_CloneObj = GameObject.Instantiate(resource.m_ResItem.m_Obj) as GameObject;
+                    resource.m_OfflineData = resource.m_CloneObj.GetComponent<OfflineData>();
                 }
             }
 
@@ -217,6 +244,7 @@ namespace 君莫笑
             else
             {
                 resObj.m_CloneObj = Instantiate(resObj.m_ResItem.m_Obj) as GameObject;
+                resObj.m_OfflineData = resObj.m_CloneObj.GetComponent<OfflineData>();
             }
 
             //加载完成就从正在加载的异步中移除

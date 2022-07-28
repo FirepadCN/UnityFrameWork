@@ -9,25 +9,25 @@ namespace 君莫笑
     {
         protected AssetBundleManager()
         {
-
         }
 
         /// <summary>
         /// 加载资源AB配置表，将其中的ab包姐依赖信息转存在m_ResourceItemDic中
         /// </summary>
-        protected Dictionary<uint,ResourceItem> m_ResourceItemDic= new Dictionary<uint, ResourceItem>();
+        protected Dictionary<uint, ResourceItem> m_ResourceItemDic = new Dictionary<uint, ResourceItem>();
 
         /// <summary>
         /// 
         /// </summary>
-        protected Dictionary<uint,AssetBundleItem> m_AssetBundleItemDic=new Dictionary<uint, AssetBundleItem>();
+        protected Dictionary<uint, AssetBundleItem> m_AssetBundleItemDic = new Dictionary<uint, AssetBundleItem>();
 
 
-        protected ClassObjectPool<AssetBundleItem> m_AssetBundleItemPool; //Fix:=ObjectManager.Instance.GetOrCreateClassPool<AssetBundleItem>(500);不能在这里调用单例，单例中用了unity下的FindObjectByType
+        protected ClassObjectPool<AssetBundleItem>
+            m_AssetBundleItemPool; //Fix:=ObjectManager.Instance.GetOrCreateClassPool<AssetBundleItem>(500);不能在这里调用单例，单例中用了unity下的FindObjectByType
 
         void Awake()
         {
-            m_AssetBundleItemPool =ObjectManager.Instance.GetOrCreateClassPool<AssetBundleItem>(500);
+            m_AssetBundleItemPool = ObjectManager.Instance.GetOrCreateClassPool<AssetBundleItem>(500);
         }
 
         #region 处理AB包加载
@@ -68,7 +68,6 @@ namespace 君莫笑
                 }
                 else
                 {
-
                     m_ResourceItemDic.Add(item.m_Crc, item);
                 }
             }
@@ -168,7 +167,7 @@ namespace 君莫笑
                 }
             }
 
-            UnLoadAssetBundle(item.m_ABName );
+            UnLoadAssetBundle(item.m_ABName);
         }
 
         /// <summary>
@@ -189,7 +188,6 @@ namespace 君莫笑
                     item.Reset();
                     m_AssetBundleItemPool.Recycle(item);
                     m_AssetBundleItemDic.Remove(crc);
-
                 }
             }
         }
@@ -201,7 +199,9 @@ namespace 君莫笑
         /// <returns>resourceitem</returns>
         public ResourceItem FindResourceItem(uint crc)
         {
-            return m_ResourceItemDic[crc];
+            ResourceItem resourceItem = null;
+            m_ResourceItemDic.TryGetValue(crc, out resourceItem);
+            return resourceItem;
         }
 
         #endregion
@@ -236,29 +236,31 @@ namespace 君莫笑
         //------------------------------
 
         public AssetBundle m_AssetBundle = null;
+
         //资源对象
         public UnityEngine.Object m_Obj = null;
+
         //资源唯一标识符
         public int m_Guid = 0;
+
         //资源最后使用的时间
         public float m_LastUseTime = 0.0f;
+
         //引用计数
-        protected int m_RerCount=0;
+        protected int m_RerCount = 0;
 
         //是否切换场景清空
         public bool m_Clear = true;
 
         public int RefCount
         {
-            get { return m_RerCount;}
+            get { return m_RerCount; }
             set
             {
                 m_RerCount = value;
-                if(m_RerCount<0)
-                    Debug.LogError("refcount < 0"+m_RerCount+","+(m_Obj!=null?m_Obj.name:"name is null"));
+                if (m_RerCount < 0)
+                    Debug.LogError("refcount < 0" + m_RerCount + "," + (m_Obj != null ? m_Obj.name : "name is null"));
             }
         }
     }
 }
-
-

@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 1978646158
+CRC: 1428442435
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 5c51516120e8404f486c9995b97c2103
+    Hash: fe53b2d12f76e934422dc4ce6891716c
   TypeTreeHash:
     serializedVersion: 2
-    Hash: b56590ed759c0a42ff1262ca0255071a
+    Hash: 2e3885af4a77ad5c65d8a36961ab4812
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -31,8 +31,13 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 95
   Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: b39d1adf075a46b1a5e1dc1337d91876, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
 - Class: 137
   Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/GameData/Modle/benghuai/Avatar_Kiana_C2_Texture_Hair_Color_Common.png
 - Assets/GameData/Modle/benghuai/Materials/Avatar_Kiana_C1_Texture_Face_Color_Common.mat
@@ -49,4 +54,4 @@ Assets:
 - Assets/GameData/Modle/benghuai/Avatar_Kiana_C2_Texture_Body_Color_RGB2048.png
 - Assets/GameData/Modle/benghuai/ID_362.bmp
 Dependencies:
-- "E:/Users/Unity/Learn/\u5546\u4E1A\u9879\u76EE/UnityFrameWork/Assets/StreamingAssets/shader"
+- "D:/Project/Learn/\u5546\u4E1A\u9879\u76EE/UnityFrameWork/Assets/StreamingAssets/shader"
