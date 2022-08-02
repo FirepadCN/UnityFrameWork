@@ -34,11 +34,6 @@ public class BundleEditor : MonoBehaviour
     [MenuItem("Tools/打包(❤ ω ❤)")]
     public static void CreateBundle()
     {
-        //simple BuildAsssetBundle
-//        BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath,
-//            BuildAssetBundleOptions.ChunkBasedCompression,EditorUserBuildSettings.activeBuildTarget);
-//        AssetDatabase.Refresh();
-
         ABConfig abConfig = AssetDatabase.LoadAssetAtPath<ABConfig>(ABCONFIGPATH);
         m_AllFileDir.Clear();
         m_AllPrafabDir.Clear();
@@ -287,6 +282,7 @@ public class BundleEditor : MonoBehaviour
         BinaryFormatter bf = new BinaryFormatter();
         bf.Serialize(fs, config);
         fs.Close();
+        AssetDatabase.Refresh();
     }
 
 

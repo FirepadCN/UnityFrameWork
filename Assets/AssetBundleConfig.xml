@@ -3,6 +3,7 @@
   <ABList Path="Assets/GameData/Data/ABData/AssetBundleConfig.bytes" Crc="588278462" ABName="assetbundleconfig" AssetName="AssetBundleConfig.bytes" ABDenpends="" />
   <ABList Path="Assets/GameData/Prefabs/Attack.prefab" Crc="1330568117" ABName="attack" AssetName="Attack.prefab" ABDenpends="shader" />
   <ABList Path="Assets/GameData/Prefabs/GameStart.prefab" Crc="114936917" ABName="gamestart" AssetName="GameStart.prefab" ABDenpends="" />
+  <ABList Path="Assets/GameData/Prefabs/UGUI/Panel/LoadingPanel.prefab" Crc="2273451330" ABName="loadingpanel" AssetName="LoadingPanel.prefab" ABDenpends="" />
   <ABList Path="Assets/GameData/Prefabs/UGUI/Panel/MenuPanel.prefab" Crc="3283179713" ABName="menupanel" AssetName="MenuPanel.prefab" ABDenpends="" />
   <ABList Path="Assets/GameData/Shaders/benghuai.shader" Crc="1145813025" ABName="shader" AssetName="benghuai.shader" ABDenpends="" />
   <ABList Path="Assets/GameData/Shaders/Skybox.shader" Crc="1986987949" ABName="shader" AssetName="Skybox.shader" ABDenpends="" />

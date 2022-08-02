@@ -20,15 +20,15 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Floats:
-    - cloudalpha: 7
-    - cloudcover: 0.22
+    - cloudalpha: 5.62
+    - cloudcover: 0.35
     - clouddark: 0.4
     - cloudlight: 0.31
-    - cloudscale: 2.22
+    - cloudscale: 3.59
     - skytint: 0.73
     - speed: 0.03
     m_Colors:
-    - m: {r: 1.6, g: 1.2, b: -1.2, a: 1.6}
+    - m: {r: 1.09, g: -0.6, b: -0.32, a: 1.11}
     - skycolor1: {r: 0, g: 0.42516708, b: 1, a: 1}
     - skycolor2: {r: 0.39999998, g: 0.8053589, b: 1, a: 1}
-    - st: {r: 1.6, g: 0.9, b: 0, a: 0}
+    - st: {r: 1.53, g: 0.69, b: 0.12, a: 0}

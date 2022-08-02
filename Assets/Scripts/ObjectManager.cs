@@ -412,6 +412,7 @@ namespace 君莫笑
                         m_ResourceObjDic.Remove(resourceObj.m_CloneObj.GetInstanceID());
                         resourceObj.Reset();
                         m_ResourceObjClassPool.Recycle(resourceObj);
+                        st.Remove(resourceObj);
                     }
                 }
                 

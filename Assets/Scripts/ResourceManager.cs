@@ -146,6 +146,11 @@ namespace 君莫笑
         //最长连续卡着加载的时间
         private const long MAXLOADRESTIME = 200000;
 
+        /// <summary>
+        /// 最大缓存个数
+        /// </summary>
+        private const int MAXCACHECOUNT = 500;
+
         public void Init(MonoBehaviour mono)
         {
             for (int i = 0; i < ((int) LoadResPriority.RES_NUM);i++)
@@ -469,11 +474,14 @@ namespace 君莫笑
         /// </summary>
         protected void WashOut()
         {
-//            if (m_NoRefrenceAssetMapList.Size() <= 0)
-//                return;
-//            ResourceItem item = m_NoRefrenceAssetMapList.Back();
-//            DestoryResourceItem(item);
-//            m_NoRefrenceAssetMapList.Pop();
+            while (m_NoRefrenceAssetMapList.Size()>=MAXCACHECOUNT)
+            {
+                for (int i = 0; i < MAXCACHECOUNT; i++)
+                {
+                    ResourceItem item = m_NoRefrenceAssetMapList.Back();
+                    DestoryResourceItem(item,true);                    
+                }
+            }
         }
 
 
@@ -488,7 +496,7 @@ namespace 君莫笑
 
             if (!destorycache)
             {
-                //m_NoRefrenceAssetMapList.InsertToHead(item);
+                m_NoRefrenceAssetMapList.InsertToHead(item);
                 return;
             }
 
@@ -497,6 +505,7 @@ namespace 君莫笑
                 return;
             }
 
+            m_NoRefrenceAssetMapList.Remove(item);
             //释放Assetbundle引用
             AssetBundleManager.Instance.ReleaseAsset(item);
             

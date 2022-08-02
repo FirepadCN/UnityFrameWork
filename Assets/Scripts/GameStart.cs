@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using 君莫笑;
-using 君莫笑.UGUI;
 
 public class GameStart : MonoBehaviour
 {
@@ -18,31 +17,35 @@ public class GameStart : MonoBehaviour
         bool iscuccess = AssetBundleManager.Instance.LoadAssetBundleConfig();
         Debug.Log($"ab资源依赖配置表是否加载成功:{iscuccess}");
         ResourceManager.Instance.Init(this);
-
         ObjectManager.Instance.Init(transform.Find("RecyclePoolTrs"),transform.Find("SceneTrs"));
     }
 
     void Start()
     {
-        #region 资源加载测试
-        //SynLoad();
-        //Invoke("AsycnLoadTest", 1f);
-        // ResourceManager.Instance.PreLoadRes("Assets/GameData/Sounds/senlin.mp3");
-
-        //ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
-
-        //ObjectManager.Instance.PreloadGameObject("Assets/GameData/Prefabs/Attack.prefab",20);
-        #endregion
-        
         UIManager.Instance.Init(transform.Find("UIRoot")as RectTransform, transform.Find("UIRoot/WndRoot")as RectTransform, 
             transform.Find("UIRoot/UICamera").GetComponent<Camera>(),transform.Find("UIRoot/EventSystem").GetComponent<EventSystem>());
         RegisterUI();
-        UIManager.Instance.PopUpWnd("MenuPanel.prefab");
+        GameMapManager.Instance.Init(this);
+        
+        #region 资源加载测试
+        //资源预加载
+        AudioClip clip = ResourceManager.Instance.LoadResource<AudioClip>(ConStr.MENUSOUND);
+        ResourceManager.Instance.ReleaseResource(clip);
+        //预加载
+        ObjectManager.Instance.PreloadGameObject(ConStr.ATTACK, 100);
+        //资源加载卸载
+        // GameObject obj = ObjectManager.Instance.InstantiateObject(ConStr.ATTACK, true,false);
+        // ObjectManager.Instance.ReleaseObject(obj);
+        // obj = null;
+        #endregion
+        
+        GameMapManager.Instance.LoadScene(ConStr.MENUSCENE);
     }
 
     void RegisterUI()
     {
-        UIManager.Instance.Register<MenuUI>("MenuPanel.prefab");
+        UIManager.Instance.Register<MenuUI>(ConStr.MENUPANEL);
+        UIManager.Instance.Register<LoadingUi>(ConStr.LOADINGPANEL);
     }
     
     #region 测试
@@ -73,30 +76,34 @@ public class GameStart : MonoBehaviour
 
     void Update()
     {
-        //return;
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            ObjectManager.Instance.ReleaseObject(obj);
-            obj = null;
-        }
-        else if(Input.GetKeyDown(KeyCode.D))
-        {
-            ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            ObjectManager.Instance.ReleaseObject(obj,0,true);
-            obj = null;
-        }
+        #region 资源加载测试
 
-        //TEST:预加载
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            source.Stop();
-            clip = ResourceManager.Instance.LoadResource<AudioClip>("Assets/GameData/Sounds/senlin.mp3");
-            source.clip = clip;
-            source.Play();
-        }
+        // if (Input.GetKeyDown(KeyCode.A))
+        // {
+        //     ObjectManager.Instance.ReleaseObject(obj);
+        //     obj = null;
+        // }
+        // else if(Input.GetKeyDown(KeyCode.D))
+        // {
+        //     ObjectManager.Instance.InstantiateObjectAsync("Assets/GameData/Prefabs/Attack.prefab",OnLoadFinishObj,LoadResPriority.RES_HIGHT,true);
+        // }
+        // else if (Input.GetKeyDown(KeyCode.S))
+        // {
+        //     ObjectManager.Instance.ReleaseObject(obj,0,true);
+        //     obj = null;
+        // }
+        //
+        // //TEST:预加载
+        // if (Input.GetKeyDown(KeyCode.C))
+        // {
+        //     source.Stop();
+        //     clip = ResourceManager.Instance.LoadResource<AudioClip>("Assets/GameData/Sounds/senlin.mp3");
+        //     source.clip = clip;
+        //     source.Play();
+        // }
+
+        #endregion
+        UIManager.Instance.OnUpdate();
     }
 
     #endregion

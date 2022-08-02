@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 2981704409
+CRC: 1209239247
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -22,11 +22,14 @@ AssetBundleManifest:
       Name: gamestart
       Dependencies: {}
     Info_6:
-      Name: menupanel
+      Name: loadingpanel
       Dependencies: {}
     Info_7:
-      Name: testui (1)
+      Name: menupanel
       Dependencies: {}
     Info_8:
+      Name: testui (1)
+      Dependencies: {}
+    Info_9:
       Name: testui
       Dependencies: {}
